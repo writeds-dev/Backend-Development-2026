@@ -1,4 +1,4 @@
-// we will keep the database connection here in this file 
+
 const mongoose=require("mongoose")
 
 const connectDB=async()=>{
