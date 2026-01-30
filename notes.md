@@ -151,3 +151,178 @@ router.put("/",updateRestaurant)
 
 
 module.exports=router
+
+
+const express=require("express")
+
+const Port =3000
+
+const connectDB =require("./src/config/database")
+
+const restaurants=require("./src/Routes/Restaurant")
+
+const app=express()
+app.use(express.json())
+app.use("/restaurants",restaurants)
+connectDB()
+app.listen(Port,()=>{
+  console.log(`the server is connected at ${Port}`)  
+})
+
+const express =require("express")
+const jwt=require("jsonwebtoken")
+const bcrypt=require("bcryptjs")
+
+const app=express()
+app.use(express.json())
+
+const user=[
+  {id:1,username:"dev",password:'12121212'}
+]
+
+app.post("/login",async(req,res)=>{
+  const {username,password}=req.body
+
+  //tofind the user
+const users=user.find(u=>u.username===username);
+if(!users) return res.status(400).send("invalid username or password")
+
+  //match the password
+  const isMatch= await bcrypt.compare(password,user.password)
+  if(!isMatch) return res.status(400).send("invalid username or password")
+
+    //jwt token 
+    const token =jwt.sign({id:user.id,username:user.username},"key",{expiresIn:"1h"})
+    res.json({token})
+})
+//protected routes 
+app.get("/protected",(req,res)=>{
+  const token =req.headers["authorization"]
+  if(!token) return res.status(403).send("token is requried")
+  
+  jwt.verify(token,"key",(err,decoded)=>{
+    if(err) return res.status(401).send("Invalid token")
+      res.send("Protected routes")
+  })
+})
+
+app.listen(3000,()=>{
+  console.log("server is runinng")
+})
+
+
+const express =require("express")
+const jwt=require("jsonwebtoken")
+const bcrypt=require("bcryptjs")
+
+const app=express()
+app.use(express.json())
+
+const user=[
+  {id:1,username:"dev",password:'12121212'}
+]
+
+app.post("/login",async(req,res)=>{
+  const {username,password}=req.body
+
+  //tofind the user
+const users=user.find(u=>u.username===username);
+if(!users) return res.status(400).send("invalid username or password")
+
+  //match the password
+  const isMatch= await bcrypt.compare(password,user.password)
+  if(!isMatch) return res.status(400).send("invalid username or password")
+
+    //hashpassword
+  bcrypt.hash(password,10,(err,hashedpassword)=>{
+    if(err) console.log(err)
+      else console.log("hashed password",hashedpassword)
+  })
+
+    //jwt token 
+    const token =jwt.sign({id:user.id,username:user.username},"key",{expiresIn:"1h"})
+    res.json({token})
+})
+//protected routes 
+app.get("/protected",(req,res)=>{
+  const token =req.headers["authorization"]
+  if(!token) return res.status(403).send("token is requried")
+  
+  jwt.verify(token,"key",(err,decoded)=>{
+    if(err) return res.status(401).send("Invalid token")
+      res.send("Protected routes")
+  })
+})
+
+app.listen(3000,()=>{
+  console.log("server is runinng")
+})
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Error</title>
+</head>
+
+<body>
+    <pre>Error: Illegal arguments: string, undefined<br> &nbsp; &nbsp;at _async (D:\Backend\node_modules\bcryptjs\umd\index.js:305:15)<br> &nbsp; &nbsp;at D:\Backend\node_modules\bcryptjs\umd\index.js:335:11<br> &nbsp; &nbsp;at new Promise (&lt;anonymous&gt;)<br> &nbsp; &nbsp;at Object.compare (D:\Backend\node_modules\bcryptjs\umd\index.js:334:16)<br> &nbsp; &nbsp;at D:\Backend\server.js:31:31<br> &nbsp; &nbsp;at Layer.handleRequest (D:\Backend\node_modules\router\lib\layer.js:152:17)<br> &nbsp; &nbsp;at next (D:\Backend\node_modules\router\lib\route.js:157:13)<br> &nbsp; &nbsp;at Route.dispatch (D:\Backend\node_modules\router\lib\route.js:117:3)<br> &nbsp; &nbsp;at handle (D:\Backend\node_modules\router\index.js:435:11)<br> &nbsp; &nbsp;at Layer.handleRequest (D:\Backend\node_modules\router\lib\layer.js:152:17)</pre>
+</body>
+
+</html>
+
+
+const express = require("express");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
+
+const app = express();
+app.use(express.json());
+
+const user = [];
+
+app.post("/register", async (req, res) => {
+  const { username, password } = req.body;
+  //password hashing
+
+  const hashedpassword = await bcrypt.hash(password, 10);
+
+  // create the new user
+  const newuser = { id: 1, username, password: hashedpassword };
+  user.push(newuser);
+
+  res.status(201).send("user register successfully");
+});
+
+app.post("/login", async (req, res) => {
+  const { username, password } = req.body;
+
+  //tofind the user
+  const users = user.find((u) => u.username === username);
+  if (!users) return res.status(400).send("invalid username or password");
+
+  //match the password
+  const isMatch = await bcrypt.compare(password, user.password);
+  if (!isMatch) return res.status(400).send("invalid username or password");
+
+  //jwt token
+  const token = jwt.sign({ id: user.id, username: user.username }, "key", {
+    expiresIn: "1h",
+  });
+  res.json({ token });
+});
+//protected routes
+app.get("/protected", (req, res) => {
+  const token = req.headers["authorization"];
+  if (!token) return res.status(403).send("token is requried");
+
+  jwt.verify(token, "key", (err, decoded) => {
+    if (err) return res.status(401).send("Invalid token");
+    res.send("Protected routes");
+  });
+});
+
+app.listen(3000, () => {
+  console.log("server is runinng");
+});
